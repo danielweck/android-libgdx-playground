@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html>
+<!--
+
+http://paperjs.org/reference/
+
+http://www.box2dflash.org/docs/2.1a/reference/
+
+-->
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	
+	<title>DanCanvas</title>
+	
+	<meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+	
+	<!-- script type="text/javascript" src="http://paperjs.org/static/js/paper.js"></script -->
+	<script type="text/javascript" src="https://raw.github.com/paperjs/paper.js/master/dist/paper.js"></script>
+	
+	<script type="text/javascript" src="http://box2dweb.googlecode.com/svn/trunk/Box2d.min.js"></script>
+	
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	
+	
+	
+	
+	<link href='http://fonts.googleapis.com/css?family=Short+Stack' rel='stylesheet' type='text/css'>
+	
+	<!-- link rel="stylesheet" href="css/main.css" -->
+	<style type="text/css">
+		*
+		{
+			border: none;
+			
+			padding: 0;
+			margin: 0;
+		}
+		
+		html, body
+		{
+			-webkit-tap-highlight-color: rgba(0,0,0,0);
+			-webkit-touch-callout: none;
+			
+			/*
+			problematic!
+			width:  100%;
+			height: 100%;
+			*/
+
+			font-family: 'Short Stack', cursive, serif, arial, helvetica, sans-serif;
+			font-size: 100%;
+			
+			color: #333;
+			background-color: transparent;
+		}
+		
+		/*
+		.box
+		{
+			font-size: 200%;
+			
+			clear: both;
+			text-align: center;
+			
+			background-color: #fff;
+		
+			position: relative;
+			width: 60%;
+			
+			padding: 2em;
+			margin: 4em auto;
+			
+			-webkit-box-shadow: 0 0 1em rgba(0, 0, 0, 0.2), inset 0 0 2em rgba(0, 0, 0, 0.1);
+			-moz-box-shadow: 0 0 1em rgba(0, 0, 0, 0.2), inset 0 0 2em rgba(0, 0, 0, 0.1);
+			-o-box-shadow: 0 0 1em rgba(0, 0, 0, 0.2), inset 0 0 2em rgba(0, 0, 0, 0.1);
+			-ms-box-shadow: 0 0 1em rgba(0, 0, 0, 0.2), inset 0 0 2em rgba(0, 0, 0, 0.1);
+			box-shadow: 0 0 1em rgba(0, 0, 0, 0.2), inset 0 0 2em rgba(0, 0, 0, 0.1);
+		}
+		.box:before, .box:after
+		{
+			display:block;
+			
+			position: absolute;
+			
+			width: 30%;
+			max-width: 300px;
+			
+			height: 1em;
+			
+			content: ' ';
+			
+			left: 1em;
+			bottom: 1em;
+			
+			background: transparent;
+			
+			-webkit-transform: skew(-5deg) rotate(-5deg);
+			-moz-transform: skew(-5deg) rotate(-5deg);
+			-o-transform: skew(-5deg) rotate(-5deg);
+			-ms-transform: skew(-5deg) rotate(-5deg);
+			transform: skew(-5deg) rotate(-5deg);
+			
+			-webkit-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-moz-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-o-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-ms-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+
+			z-index: -1;
+		} 
+
+		.box:after
+		{
+			left: auto;
+			right: 1em;
+			
+			-webkit-transform: skew(5deg) rotate(5deg);
+			-moz-transform: skew(5deg) rotate(5deg);
+			-o-transform: skew(5deg) rotate(5deg);
+			-ms-transform: skew(5deg) rotate(5deg);
+			transform: skew(5deg) rotate(5deg);
+		} 
+		*/
+		
+		#canvas1, #canvas2
+		{
+			-webkit-user-select: none;
+			
+			position: absolute;
+			left: 0;
+			top: 0;
+			
+			/*
+			width: 100%;
+			height: 100%;
+			*/
+		}
+		
+		#canvas1
+		{
+			z-index: -100;
+			background: black;
+		}
+		
+		#canvas2
+		{
+			z-index: -50;
+			background: transparent;
+			
+			pointer-events: none;
+		}
+		
+		ul.paperList, ol.paperList
+		{
+			position: relative;
+			z-index: 1; /* prevent shadows falling behind containers with backgrounds */
+			overflow: hidden;
+			list-style: none;
+			
+			padding: 0;
+			
+			margin: 5em;
+		}
+
+		ul.paperList li, ol.paperList li,
+		.paper
+		{
+			background-color: #fff;
+		
+			position: relative;
+
+			padding: 1.5em;
+			border: 1px solid #efefef;
+			
+			-webkit-box-shadow: 0 0.20em 0.35em rgba(0, 0, 0, 0.27), 0 0 2em rgba(0, 0, 0, 0.06) inset;
+			-moz-box-shadow: 0 0.20em 0.35em rgba(0, 0, 0, 0.27), 0 0 2em rgba(0, 0, 0, 0.06) inset;
+			-o-box-shadow: 0 0.20em 0.35em rgba(0, 0, 0, 0.27), 0 0 2em rgba(0, 0, 0, 0.06) inset;
+			-ms-box-shadow: 0 0.20em 0.35em rgba(0, 0, 0, 0.27), 0 0 2em rgba(0, 0, 0, 0.06) inset;
+			box-shadow: 0 0.20em 0.35em rgba(0, 0, 0, 0.27), 0 0 2em rgba(0, 0, 0, 0.06) inset;
+		}
+
+		ul.paperList li, ol.paperList li
+		{
+			float: left;
+			margin: 0 2em 2em 0;
+			
+			width: 14em;
+			height: 7em;
+		}
+		
+		ul.paperList li:before, ul.paperList li:after,
+		ol.paperList li:before, ol.paperList li:after,
+		.paper :before, .paper :after
+		{
+			background: transparent;
+			content: '';
+			z-index: -1;
+			position: absolute;
+			
+			left: 0.95em;
+			bottom: 0.90em;
+			
+			width: 70%;
+			max-width: 13em;
+			height: 50%;
+			
+			-webkit-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-moz-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-o-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-ms-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+			-webkit-box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.3);
+
+			-webkit-transform: skew(-15deg) rotate(-6deg);
+			-moz-transform: skew(-15deg) rotate(-6deg);
+			-o-transform: skew(-15deg) rotate(-6deg);
+			-ms-transform: skew(-15deg) rotate(-6deg);
+			transform: skew(-15deg) rotate(-6deg);
+		}
+
+
+		ul.paperList li:after,
+		ol.paperList li:after,
+		.paper :after
+		{
+			left: auto;
+			right: 0.90em;
+			
+			-webkit-transform: skew(15deg) rotate(6deg);
+			-moz-transform: skew(15deg) rotate(6deg);
+			-o-transform: skew(15deg) rotate(6deg);
+			-ms-transform: skew(15deg) rotate(6deg);
+			transform: skew(15deg) rotate(6deg);
+		}
+		
+		div.paper
+		{
+			font-size: 200%;
+			
+			clear: both;
+			text-align: center;
+		
+			width: 60%;
+			margin: 4em auto;
+		}
+	</style>
+	
+	
+	<script type="text/paperscript" data-paper-canvas="canvas1">
+		
+		console.log("view.bounds: " + view.bounds);
+		console.log("view.viewSize: " + view.viewSize);
+		
+		function resetBox2DCanvasSize()
+		{
+			var box2Dcanvas = document.getElementById("canvas2");
+			if (box2Dcanvas)
+			{
+				box2Dcanvas.width = view.viewSize.width;
+				box2Dcanvas.height = view.viewSize.height;
+			}
+		}
+		
+		resetBox2DCanvasSize();
+		
+		//tool.minDistance = offset;
+		tool.maxDistance = offset * 3;
+		
+		var rectanglePath = new Path.Rectangle(new Rectangle(offset, offset,
+			view.viewSize.width - offset*2, view.viewSize.height - offset*2));
+		rectanglePath.fillColor = new RGBColor(0.85, 0.9, 0.8, 1);
+		
+		var text = new PointText(new Point(offset, offset-offset/3));
+		text.justification = 'right'; // override=den below
+		text.fillColor = 'red'; // override=den below
+		text.paragraphStyle.justification = 'left';
+		text.characterStyle =
+		{
+			fontSize: 20,
+			fillColor: 'white',
+		};
+		text.content = 'Balls!';
+		//text.blendMode = 'normal';
+		//text.fillColor = 'blue';
+		
+		var maxBallBounds = new Rectangle(view.center.x, view.center.y, tool.maxDistance, tool.maxDistance);
+		var rasterBallSymbols = [];
+		var rasterBallSymbolsIndex = 0;
+		var imageResources = document.getElementById("imageResources");
+		var n = imageResources.childNodes.length;
+		for (var i = 0; i < n; i++)
+		{
+			var node = imageResources.childNodes[i];
+			if (node.nodeName != "IMG") continue;
+			
+			var rasterBall = new Raster(node);
+			rasterBall.position = new Point(view.center);
+			var fitted = rasterBall;
+			if (rasterBall.width > maxBallBounds.width)
+			{
+				rasterBall.fitBounds(maxBallBounds);
+				fitted = rasterBall.rasterize();
+				rasterBall.remove();
+			}
+			rasterBallSymbols.push(new Symbol(fitted));
+			fitted.remove();
+			
+			/*
+			TODO: analyze image transparency outline + bayazit decomposer
+			
+			var points = [{x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y:2}];
+			for (var i = 0; i < points.length; i++) {
+			    var vec = new b2Vec2();
+			    vec.Set(points[i].x, points[i].y);
+			    points[i] = vec;
+			}
+			this.fixDef.shape = new b2PolygonShape;
+			this.fixDef.shape.SetAsArray(points, points.length);
+			this.bodyDef.position.x = 5;
+			this.bodyDef.position.y = 5;
+			this.world.CreateBody(this.bodyDef).CreateFixture(this.fixDef);
+			
+			
+			
+			
+			var entity = "4": {id: 4, x: 10, y: 10, polys: [
+			    [{x: -1, y: -1}, {x: 1, y: -1}, {x: 1, y: 1}, {x: -1, y: 1}], // box
+			    [{x: 1, y: -1.5}, {x: 2, y: 0}, {x: 1, y: 1.5}]  // arrow
+			]};
+			for (var j = 0; j < entity.polys.length; j++) {
+			    var points = entity.polys[j];
+			    var vecs = [];
+			    for (var i = 0; i < points.length; i++) {
+			        var vec = new b2Vec2();
+			        vec.Set(points[i].x, points[i].y);
+			        vecs[i] = vec;
+			    }
+			    this.fixDef.shape = new b2PolygonShape;
+			    this.fixDef.shape.SetAsArray(vecs, vecs.length);
+			    body.CreateFixture(this.fixDef);
+			}
+			*/
+		}
+		
+		console.log("Ball images: " + rasterBallSymbols.length);
+		
+		for (var i = 0; i < n; i++)
+		{
+			var toRemove = imageResources.childNodes[0];
+			toRemove.parentNode.removeChild(toRemove);
+		}
+		
+		var layerBack = project.activeLayer;
+		var layerFront = new Layer();
+		
+		var rectanglePathClip = new Path.Rectangle(new Rectangle(offset, offset,
+			view.viewSize.width - offset*2, view.viewSize.height - offset*2));
+		
+		rectanglePathClip.clipMask = true; //layer.clipped = true;
+		
+		
+		function onResize(event)
+		{
+			console.log("onResize view.bounds: " + view.bounds);
+			console.log("onResize view.viewSize: " + view.viewSize);
+			
+			resetBox2DCanvasSize();
+			
+			layerBack.activate();
+			
+			var color = rectanglePath.fillColor;
+			rectanglePath.remove();
+			
+			rectanglePath = new Path.Rectangle(new Rectangle(offset, offset,
+				view.viewSize.width - offset*2, view.viewSize.height - offset*2));
+				
+			rectanglePath.fillColor = color;
+			
+			rectanglePath.moveBelow(text); //layerBack.firstChild
+			
+			
+			
+			layerFront.activate();
+			
+			rectanglePathClip.remove();
+			
+			rectanglePathClip = new Path.Rectangle(new Rectangle(offset, offset,
+				view.viewSize.width - offset*2, view.viewSize.height - offset*2));
+			
+			rectanglePathClip.clipMask = true;
+			
+			rectanglePathClip.moveBelow(layerFront.firstChild);
+			
+			resetBodyGround();
+		}
+
+		var fpsRefresh = null; // later on toggle true/false
+		
+		var bodiesToDestroy = [];
+		
+		function onFrame(event)
+		{
+			if ('undefined' != typeof world)
+			{
+				var fps =  Math.round(1 / event.delta);
+			
+				world.Step(
+					event.delta // frame-rate, e.g. 1/60
+					, fps < 20 ? 4 : 8 // velocity iterations
+					, fps < 20 ? 2 : 4 // position iterations
+		         );
+				if (drawDebugWorld) world.DrawDebugData();
+				world.ClearForces();
+				
+				if (fpsRefresh)
+				{
+					fpsRefresh = false;
+					
+					text.content = fps + " fps (" + (layerFront.children.length - 1) + " balls)";
+				}
+				
+				var bodyList = world.GetBodyList();
+				if (fps > 10 && bodyList)
+				{
+					for (var body = bodyList; body; body = body.GetNext())
+					{
+						if (body == bodyGround) continue;
+						
+						var pos = body.GetPosition();
+					
+						var raster = body.GetUserData();
+						if (raster)
+						{
+							raster.position.x = pos.x * worldScale;
+							raster.position.y = pos.y * worldScale;
+							var bodyDegrees = body.GetAngle() * (180/Math.PI);
+							raster.rotate(bodyDegrees - raster.angleDegrees);
+							raster.angleDegrees = bodyDegrees;
+						}
+						
+						if (pos.x < 0 || pos.x > (view.viewSize.width / worldScale)
+							|| pos.y < 0 || pos.y > (view.viewSize.height / worldScale)
+						)
+						{
+							bodiesToDestroy.push(body);
+						}
+					}
+			
+					//if (bodiesToDestroy.length > 0) console.log("destroying bodies: " + bodiesToDestroy.length);
+					for (var i = 0; i < bodiesToDestroy.length; i++)
+					//for(var i in bodiesToDestroy)
+					{
+						var body = bodiesToDestroy[i];
+						var raster = body.GetUserData();
+						raster.remove();
+						world.DestroyBody(body);
+					}
+					
+					bodiesToDestroy.length = 0; // .clear()
+					/*
+					for (var i = 0; i < bodiesToDestroy.length; i++)
+					{
+						delete bodiesToDestroy[i];
+					}
+					*/
+				}
+			}
+		}
+		
+		var mouseJoint = null;
+		
+		function onMouseDown(event)
+		{
+			//console.log("onMouseDown: " + event);
+			//logExtra(event);
+			
+			previousDragPoint = null;
+			
+			if (fpsRefresh == null)
+				window.setInterval(function()
+					{
+						fpsRefresh = true;
+					},
+					500);
+					
+					
+			var hitResult = project.hitTest(event.point,
+				{
+					segments: true,
+					stroke: true,
+					fill: true,
+					tolerance: 5
+				});
+				
+			if (hitResult && hitResult.item)
+			{
+				hitResult.item.selected = true;
+			}
+			
+			var body = getBodyAtScreenPoint(event.point.x, event.point.y);
+			if (body)
+			{
+				var md = new b2MouseJointDef();
+				md.bodyA = world.GetGroundBody();
+				md.bodyB = body;
+				md.target.Set(event.point.x / worldScale, event.point.y / worldScale);
+				md.collideConnected = true;
+				md.maxForce = 300.0 * body.GetMass();
+				mouseJoint = world.CreateJoint(md);
+				body.SetAwake(true);
+
+				var raster = mouseJoint.GetBodyB().GetUserData();
+				if (raster) raster.selected = true;
+			}
+		}
+		
+		function onMouseUp(event)
+		{
+			//console.log("onMouseUp: " + event);
+			//logExtra(event);
+				
+			previousDragPoint = null;
+			
+			rasterBallSymbolsIndex = (rasterBallSymbolsIndex+1) % rasterBallSymbols.length;
+
+			if (mouseJoint)
+			{
+				var raster = mouseJoint.GetBodyB().GetUserData();
+				if (raster) raster.selected = false;
+				
+				world.DestroyJoint(mouseJoint);
+				mouseJoint = null;
+			}
+		}
+	
+		
+		var previousDragPoint = null;
+		
+		function onMouseDrag(event)
+		{
+			//console.log("onMouseDrag: " + event);
+			//logExtra(event);
+
+			if (event.type != 'mousedrag')
+			{
+				console.log("skipping weird onMouseDrag (mobile WebKit touch event?)");
+				return;
+			}
+			
+			if (mouseJoint)
+			{
+				mouseJoint.SetTarget(new b2Vec2(event.point.x / worldScale, event.point.y / worldScale));
+				return;
+			}
+			
+			var delta = 0; //event.delta.length;
+			
+			if (previousDragPoint)
+			{
+				delta = previousDragPoint.getDistance(event.point, false);
+				if (delta < offset) return;
+			}
+			else
+			{
+				previousDragPoint = event.point;
+				return;
+			}
+			
+			var middlePoint = event.point.add(previousDragPoint).divide(2); //event.middlePoint;
+			
+			layerFront.activate();
+			
+			var radius = delta / 2;
+			
+			//var raster = rasterBall.clone();
+			var symbol = rasterBallSymbols[rasterBallSymbolsIndex];
+			var raster = symbol.place();
+			raster.position = middlePoint;
+			raster.scale((radius*2)/symbol.definition.width);
+			var angleDegrees = 0; //body.GetAngle() * (180/Math.PI);
+			raster.rotate(angleDegrees);
+			raster.angleDegrees = angleDegrees; // custom object data!
+			
+			bodyDef.type = b2Body.b2_dynamicBody;
+			fixDef.shape = new b2CircleShape(radius / worldScale);
+			bodyDef.position.x = middlePoint.x / worldScale;
+			bodyDef.position.y = middlePoint.y / worldScale;
+			var body = world.CreateBody(bodyDef);
+			var fixture = body.CreateFixture(fixDef);
+			
+			body.SetUserData(raster);
+			
+			previousDragPoint = event.point;
+			
+			//console.log("ADD: " + layerFront.children.length + " / " + delta + " -- " + layerFront.children[1]);
+		}
+		
+		function logExtra(event)
+		{
+			console.log("delta: " + ('undefined' == typeof event.delta ? "N/A" : event.delta));
+			
+			console.log("lastPoint: " + ('undefined' == typeof event.lastPoint ? "N/A" : event.lastPoint));
+			console.log("downPoint: " + ('undefined' == typeof event.downPoint ? "N/A" : event.downPoint));
+			
+			if (event.type == 'mousedrag')
+			{
+				console.log("middlePoint: " + ('undefined' == typeof event.middlePoint ? "N/A" : event.middlePoint));
+			}
+		}
+		
+	</script>
+	
+	<script type="text/javascript">
+	
+	var orientation = (typeof window.orientation != 'undefined');
+	if (orientation)
+	{
+				//window.alert("window.orientation OK");
+				
+		window.addEventListener('deviceorientation', function(event) {
+
+		window.alert("window.orientation: " + window.orientation + " / event.alpha: " + event.alpha + " / event.beta: " + event.beta + " / event.gamma: " + event.gamma);
+		}, false);
+		
+		if ("onorientationchange" in window)
+			window.addEventListener(
+					'orientationchange',
+					function (e)
+					{
+						//window.alert("window.orientation: " + window.orientation);
+					},
+					false
+				);
+				
+
+				var acceleration = {x: 0, y: 0, z: 0};
+//				if ("ondevicemotion" in window)
+		window.addEventListener(
+				'devicemotion',
+				function (e)
+				{
+					window.alert("devicemotion: " + window.orientation);
+					
+					acceleration.x = e.accelerationIncludingGravity.x * filter + acceleration.x * (1.0 - filter);
+					acceleration.y = e.accelerationIncludingGravity.y * filter + acceleration.y * (1.0 - filter);
+
+					//document.getElementById('debug').innerHTML = e.accelerationIncludingGravity.y;
+
+					switch (window.orientation)
+					{
+						case 90:
+						world.m_gravity.x = 70 * -acceleration.y;
+						world.m_gravity.y = 70 * -acceleration.x;
+						break;
+
+						case -90:
+						world.m_gravity.x = 70 * acceleration.y;
+						world.m_gravity.y = 70 * acceleration.x;
+						break;
+
+						case 180:
+						world.m_gravity.x = 70 * -acceleration.x;
+						world.m_gravity.y = 70 * acceleration.y;
+						break;
+
+						default:
+						world.m_gravity.x = 70 * acceleration.x;
+						world.m_gravity.y = 70 * -acceleration.y;
+						break;
+					}
+				},
+				false
+			);
+	}
+	/*
+	// paperjs has its own (slightly more sophisticated)
+	
+	if ( !window.requestAnimationFrame ) {
+
+		window.requestAnimationFrame = ( function() {
+
+			return window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function(callback,element ) {
+				window.setTimeout( callback, 1000 / 60 );
+			};
+		} )();
+	}
+	*/
+	function getDocHeight() {
+	    var D = document;
+	    return Math.max(
+	        Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
+	        Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
+	        Math.max(D.body.clientHeight, D.documentElement.clientHeight)
+	    );
+	}
+	
+		var b2Vec2 = Box2D.Common.Math.b2Vec2;
+		var b2BodyDef = Box2D.Dynamics.b2BodyDef;
+		var b2Body = Box2D.Dynamics.b2Body;
+		var b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
+		var b2Fixture = Box2D.Dynamics.b2Fixture;
+		var b2World = Box2D.Dynamics.b2World;
+		var b2MassData = Box2D.Collision.Shapes.b2MassData;
+		var b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
+		var b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
+		var b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
+		var b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef;
+		var b2AABB = Box2D.Collision.b2AABB;
+		
+		
+		function getBodyAtScreenPoint(x, y)
+		{
+			var selectedBody = null;
+			var mousePVec = new b2Vec2(x / worldScale, y / worldScale);
+			function AABB_Callback(fixture)
+			{
+				if (fixture.GetBody().GetType() != b2Body.b2_staticBody)
+				{
+					if (fixture.GetShape().TestPoint(fixture.GetBody().GetTransform(), mousePVec))
+					{
+						selectedBody = fixture.GetBody();
+						return false;
+					}
+				}
+				return true;
+			}
+			
+			var aabb = new b2AABB();
+			aabb.lowerBound.Set(mousePVec.x - 0.001, mousePVec.y - 0.001);
+			aabb.upperBound.Set(mousePVec.x + 0.001, mousePVec.y + 0.001);
+
+			selectedBody = null;
+			world.QueryAABB(AABB_Callback, aabb);
+			return selectedBody;
+		}
+
+		var offset = 50;
+		var worldScale = 30;
+		var world;
+		var bodyGround;
+
+		var drawDebugWorld = false;
+	
+		var fixDef = new b2FixtureDef;
+		fixDef.density = 1.0;
+		fixDef.friction = 0.5;
+		fixDef.restitution = 0.0; // 0.2 => slightly bouncy
+		
+		var bodyDef = new b2BodyDef;
+
+		
+		function resetBodyGround()
+		{
+			if (bodyGround) world.DestroyBody(bodyGround);
+			
+			bodyDef.type = b2Body.b2_staticBody;
+			bodyDef.position.x = (paper.view.viewSize.width/2) / worldScale;
+			bodyDef.position.y = (paper.view.viewSize.height-offset/2) / worldScale;
+			fixDef.shape = new b2PolygonShape;
+			fixDef.shape.SetAsBox((paper.view.viewSize.width-offset-offset) / worldScale / 2, offset / worldScale / 2);
+			bodyGround = world.CreateBody(bodyDef);
+			var fixture = bodyGround.CreateFixture(fixDef);
+		}
+		
+		function ApplyImpulse(body, degrees, power) {
+		  body.ApplyImpulse(new b2Vec2(Math.cos(degrees * (Math.PI / 180)) * power,
+		                               Math.sin(degrees * (Math.PI / 180)) * power),
+		                               body.GetWorldCenter());
+		}
+		
+		/*
+		var listener = new Box2D.Dynamics.b2ContactListener;
+		
+		listener.BeginContact = function(contact) {
+		  console.log(contact.GetFixtureA().GetBody().GetUserData());
+		  console.log(contact.GetFixtureB().GetBody().GetUserData());
+		};
+		this.world.SetContactListener(listener);
+		
+		
+		
+		listener.PostSolve = function(contact, impulse) {
+		  var impulseValue = impulse.normalImpulses[0];
+		  if (impulseValue < 0.1) return;
+		  var object = contact.GetFixtureA().GetBody().GetUserData();
+		  object.applyHit(impulseValue);
+		};
+		*/
+		
+		$(document).ready(function()
+		{
+			$('#pop').delay(3000).fadeOut('fast', function() {
+				$(this).remove();
+			  });
+			$('#pageList').hide().delay(3000).fadeIn('slow').delay(3000).fadeOut('fast', function() {
+				$(this).remove();
+			  });
+		});
+		
+		function loaded()
+		{
+			setTimeout(function ()
+			{
+				document.body.addEventListener('touchmove',
+					function(event)
+					{
+						event.preventDefault();
+						
+						/*
+						event.touches : all of the current touches
+						event.targetTouches : all the touches that originated from the DOM element
+						event.changedTouches : only the touches that triggered the event.
+						For touchstart and touchend, changedTouches usually only contains
+						one touch event (unless you just happened to touch two fingers at exactly the same time).
+
+						Each array contains touch data objects with the following properties :
+
+						identifier: An unique number that allows you to track touch events as they move
+						target: the DOM element that broadcast that event
+						clientX, clientY: touch position relative to the viewport
+						screenX, screenY: touch position relative to the screen
+						pageX, pageY: touch position relative to the full page
+						*/
+					},
+					false);
+				
+				/*
+				$(document).ready(function()
+				        {
+				            $('#screen').attr("height", $(window).height() );
+				            $('#screen').attr("width", $(window).width() );
+
+				            //prevent scrolling
+				            $(document).bind('touchstart touchmove', function(e)
+				            {
+				                e.preventDefault();
+				            });
+				        });
+				*/
+				
+				/*
+				var preventDefault = function(e)
+				{
+				    e.preventDefault();
+					//e.stopPropagation();
+				};
+
+				var touchstart = function(e)
+				{
+				    document.addEventListener('touchstart', preventDefault, false);
+				    document.addEventListener('touchmove', preventDefault, false);
+				};
+				paper.view.canvas.addEventListener('touchstart', touchstart, false);
+
+				var touchend = function(e)
+				{
+				    document.removeEventListener('touchstart', preventDefault, false);
+				    document.removeEventListener('touchmove', preventDefault, false);
+				};
+				paper.view.canvas.addEventListener('touchend', touchend, false);
+				*/
+
+				/*
+				var touchmove = function(e)
+				{
+				    preventDefault();
+				};
+				paper.view.canvas.addEventListener('touchmove', touchmove, false);
+				*/
+				
+				window.scroll(0, 0);
+				
+				
+				
+				function initWorld()
+				{
+					/*
+					var worldAABB = new b2AABB();
+					        worldAABB.lowerBound.Set(-100000.0, -100000.0);
+					        worldAABB.upperBound.Set(100000.0, 100000.0);
+					        var gravity = new b2Vec2(0, 0);
+					        var world = new b2World(worldAABB, gravity, true);
+					*/
+					
+					world = new b2World(
+						new b2Vec2(0, 15) // gravity
+						,  true // allow sleep
+						);
+					
+					if (drawDebugWorld)
+					{
+						var debugDraw = new b2DebugDraw();
+						debugDraw.SetSprite(
+							//paper.view.canvas.getContext("2d")
+							document.getElementById("canvas2").getContext("2d")
+							);
+						debugDraw.SetDrawScale(worldScale);
+						debugDraw.SetFillAlpha(0.5);
+						debugDraw.SetLineThickness(1.0);
+						debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+						world.SetDebugDraw(debugDraw);
+					}
+					else
+					{
+						var element = document.getElementById("canvas2");
+						element.parentNode.removeChild(element);
+					}
+
+					resetBodyGround();
+			      };
+			
+			initWorld();
+			}, 100);
+		}
+		//document.addEventListener('DOMContentLoaded', loaded, false);
+		window.addEventListener('load', loaded, false);
+	</script>
+</head>
+<body>
+	
+	<canvas id="canvas1"
+		data-paper-resize="true" data-paper-keepalive="false">
+		Your browser doesn't support canvas?!
+	</canvas>
+	
+	<canvas id="canvas2">
+		Your browser doesn't support canvas?!
+	</canvas>
+	
+	<div id="pop" class="paper">
+	<p>
+	Drag finger/mouse to create balls!
+	</p>
+	</div>
+	
+	<ul  id="pageList" class="paperList">
+	  <li>Test Page 1</li>
+	  <li>Test Page 2</li>
+	  <li>Test Page 3</li>
+	  <li>Test Page 4</li>
+	</ul>
+	
+	<div id="imageResources"
+		style="display:none;">
+		
+		<!-- img
+			src="http://www.opentk.com/files/ball.png"/ -->
+			
+		<img
+			src="http://www.freewebs.com/pokemonknowitalls/photos/Poke-Balls/SugimoriPremierBall.png"/>
+		<img
+			src="http://images.wikia.com/pokemon/images/f/f1/UltraBallArt.png"/>
+		<img
+			src="http://www.freewebs.com/pokemonknowitalls/photos/Poke-Balls/SugimoriTimerBall.png"/>
+		<img
+			src="http://www.freewebs.com/pokemonknowitalls/photos/Poke-Balls/SugimoriDuskBall.png"/>
+		<img
+			src="http://www.zeldawiki.org/images/a/a6/SugimoriPokeBall.png"/>
+		
+		<!-- img
+			src="http://images2.wikia.nocookie.net/__cb20110425225954/fantendo/images/9/9f/SoccerBall.png"/>
+		<img
+			src="https://sites.google.com/a/lkdsb.com/lkcs/announcements/exams/beach_ball.png"/>
+		<img
+			src="http://i377.photobucket.com/albums/oo215/SnowmonkiesOGD/renders/LaserBall.png"/>
+		<img
+			src="http://upload.wikimedia.org/wikipedia/commons/d/d3/Rattan_sepak_tawraw_ball.png"/>
+		<img
+			src="http://jipsondish.com/images/soccer_ball.png"/>
+		<img
+			src="http://www.freewebsitetemplates.com/forum/attachments/f7/5383d1294066870-how-make-vector-football-large-ball.png"/ -->
+	</div>
+</body>
+</html>
